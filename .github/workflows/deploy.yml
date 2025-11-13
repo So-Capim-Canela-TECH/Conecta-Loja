@@ -6,8 +6,33 @@ on:
       - main # Ajuste para o seu branch principal (main/master)
 
 jobs:
+  deploy-postgres:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Flyctl
+        run: |
+          curl -L https://fly.io/install.sh | sh
+          export PATH="$HOME/.fly/bin:$PATH"
+          echo "$HOME/.fly/bin" >> $GITHUB_PATH
+
+      - name: Deploy PostgreSQL
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          # Só faz deploy se o app já existir (não cria automaticamente)
+          if fly apps list | grep -q "conecta-loja-postgres"; then
+            echo "PostgreSQL app exists, deploying..."
+            fly deploy --app conecta-loja-postgres --remote-only
+          else
+            echo "PostgreSQL app not found, skipping deploy"
+          fi
+
   deploy-backend:
     runs-on: ubuntu-latest
+    needs: deploy-postgres # Backend só deploya após PostgreSQL estar pronto
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
