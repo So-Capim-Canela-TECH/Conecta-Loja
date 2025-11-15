@@ -1,5 +1,5 @@
-# Multi-stage build for production
-FROM node:18-alpine AS builder
+#Use Node.js 18 Alpine for smaller image size
+FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
@@ -13,20 +13,8 @@ RUN npm ci
 # Copy source code and configuration files
 COPY . .
 
-# Build the application
-RUN npm run build
+# Expose port 5173 (default Vite dev server port)
+EXPOSE 5173
 
-# Production stage with nginx
-FROM nginx:alpine
-
-# Copy built assets from builder stage
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Expose port 80
-EXPOSE 80
-
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Default command for development with hot reload
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
