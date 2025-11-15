@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only --poll src/server.ts",
     "build": "tsc",
+    "prebuild": "npx prisma generate",
     "prisma": "prisma",
     "seed": "ts-node prisma/seed.ts",
     "start": "node dist/server.js",
