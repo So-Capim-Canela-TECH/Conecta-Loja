@@ -6,7 +6,6 @@ primary_region = "gru"  # São Paulo, Brasil
 
 [env]
   NODE_ENV = "production"
-  VITE_API_URL = "https://conecta-loja-backend.fly.dev"
 
 [http_service]
   internal_port = 80
@@ -20,3 +19,7 @@ primary_region = "gru"  # São Paulo, Brasil
   cpu_kind = "shared"
   cpus = 1
   memory_mb = 256
+
+# URL da API do backend (será definida após deploy do backend)
+[env]
+  VITE_API_URL = "https://conecta-loja-backend.fly.dev"

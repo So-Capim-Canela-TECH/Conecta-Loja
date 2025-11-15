@@ -7,7 +7,6 @@ primary_region = "gru"  # São Paulo, Brasil
 [env]
   PORT = "8080"
   NODE_ENV = "production"
-  DATABASE_URL = "postgresql://conecta_loja_backend:<password>@conecta-loja-postgres.flycast:5432/conecta_loja_backend?sslmode=require"
 
 [http_service]
   internal_port = 8080
@@ -21,6 +20,10 @@ primary_region = "gru"  # São Paulo, Brasil
   cpu_kind = "shared"
   cpus = 1
   memory_mb = 512
+
+# Conexão com PostgreSQL (será criado separadamente)
+[env]
+  DATABASE_URL = "postgresql://conecta_loja_backend:<password>@conecta-loja-postgres.flycast:5432/conecta_loja_backend?sslmode=require"
 
 # JWT Secret (deve ser definido como secret no Fly.io)
 [secrets]
