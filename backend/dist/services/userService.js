@@ -75,6 +75,7 @@ class UserService {
                 id: foundUser.id,
                 email: foundUser.email,
                 name: foundUser.name,
+                contact: 'contact' in foundUser ? foundUser.contact : null, // Adicionar telefone/contato apenas se existir
                 userType: userType,
                 cargoId: 'cargoId' in foundUser ? foundUser.cargoId : null
             }, secret, { expiresIn: '24h' });
