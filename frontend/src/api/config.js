@@ -6,10 +6,15 @@ import axios from "axios";
  * Configuração centralizada para todas as requisições da API.
  * Importe este arquivo em todos os serviços que precisam acessar a API.
  */
+// Debug: verificar qual URL está sendo usada
+const apiUrl =
+  import.meta.env.VITE_API_URL ||
+  "https://conecta-loja-backend.onrender.com/api";
+console.log("🔧 API URL sendo usada:", apiUrl);
+console.log("🔧 VITE_API_URL:", import.meta.env.VITE_API_URL);
+
 const api = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_URL ||
-    "https://conecta-loja-backend.onrender.com/api",
+  baseURL: apiUrl,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
