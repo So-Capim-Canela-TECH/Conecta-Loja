@@ -1,4 +1,5 @@
 import { PrismaClient } from '../generated/prisma';
+import { afterEach, afterAll } from '@jest/globals';
 
 // Mock do Prisma Client para testes
 const prisma = new PrismaClient();

@@ -1,40 +1,28 @@
-app = "conecta-loja-postgres"
-primary_region = "gru"  # São Paulo, Brasil
+# fly.toml app configuration file generated for conecta-loja-postgres on 2025-11-12T22:43:24-03:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'conecta-loja-postgres'
+primary_region = 'gru'
 
 [build]
-  image = "postgres:17-alpine"
+  image = 'flyio/postgres:17'
 
 [env]
   POSTGRES_DB = "conecta_loja_backend"
-  POSTGRES_USER = "conecta_loja_backend"
-  POSTGRES_PASSWORD = "your_secure_password_here"
+  POSTGRES_USER = "postgres"
+  POSTGRES_HOST_AUTH_METHOD = "trust"
 
 [http_service]
   internal_port = 5432
   force_https = false  # PostgreSQL não precisa de HTTPS
-  auto_stop_machines = false  # Manter sempre ligado
+  auto_stop_machines = false
   auto_start_machines = true
   min_machines_running = 1
-  processes = ["app"]
+  processes = ['app']
 
 [[vm]]
-  cpu_kind = "shared"
+  memory = '1gb'
+  cpu_kind = 'shared'
   cpus = 1
-  memory_mb = 512
-
-# Persistir dados do PostgreSQL
-[mounts]
-  source = "postgres_data"
-  destination = "/var/lib/postgresql/data"
-
-# Health check para PostgreSQL
-[checks]
-  [checks.pg]
-    port = 5432
-    type = "tcp"
-    interval = "15s"
-    timeout = "2s"
-
-# Secrets para senha segura
-[secrets]
-  POSTGRES_PASSWORD = "your_secure_password_here"
