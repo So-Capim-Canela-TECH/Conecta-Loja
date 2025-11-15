@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateProfile = exports.updatePersonalInfo = exports.getProfile = exports.createUser = void 0;
 const userService_1 = require("../services/userService");
+const employeeService_1 = require("../services/employeeService");
 /**
  * Controller para criação de usuário
  *
@@ -42,20 +43,30 @@ const createUser = async (req, res) => {
 exports.createUser = createUser;
 /**
  * Controller para buscar o perfil do usuário logado.
- * Chama o serviço que busca os dados no banco.
+ * Detecta o tipo de usuário (cliente/funcionário) e chama o serviço apropriado.
  */
 const getProfile = async (req, res) => {
     console.log("--- [CONTROLLER] A função getProfile foi chamada. ---");
     try {
-        // O ID do usuário é injetado na requisição pelo seu middleware de autenticação
+        // O ID e tipo do usuário são injetados na requisição pelo middleware de autenticação
         const userId = req.user.id;
-        const userProfile = await userService_1.UserService.getProfile(userId);
+        const userType = req.user.userType;
+        let userProfile;
+        // Chamar serviço apropriado baseado no tipo de usuário
+        if (userType === 'funcionario' || userType === 'admin') {
+            // Para funcionários e admins, buscar dados da tabela funcionário
+            userProfile = await employeeService_1.EmployeeService.getEmployeeProfile(userId);
+        }
+        else {
+            // Para clientes, buscar dados da tabela usuário
+            userProfile = await userService_1.UserService.getProfile(userId);
+        }
         res.status(200).json(userProfile);
     }
     catch (error) {
         const errorMessage = error.message;
         // Retorna erros específicos vindos do serviço
-        if (errorMessage === "Usuário não encontrado") {
+        if (errorMessage === "Usuário não encontrado" || errorMessage === "Funcionário não encontrado") {
             return res.status(404).json({ success: false, error: errorMessage });
         }
         // Retorna um erro genérico para outros casos
@@ -65,21 +76,37 @@ const getProfile = async (req, res) => {
 exports.getProfile = getProfile;
 /**
  * Controller para atualizar informações pessoais do usuário logado.
- * Chama o serviço que salva os dados pessoais no banco.
+ * Detecta o tipo de usuário e chama o serviço apropriado.
  */
 const updatePersonalInfo = async (req, res) => {
     try {
         const userId = req.user.id;
+        const userType = req.user.userType;
         const personalData = req.body;
-        // Validar dados de entrada - incluir avatar também
-        const allowedFields = ['name', 'email', 'contact', 'avatar'];
-        const filteredData = {};
-        for (const field of allowedFields) {
-            if (personalData[field] !== undefined) {
-                filteredData[field] = personalData[field];
+        let updatedUser;
+        // Chamar serviço apropriado baseado no tipo de usuário
+        if (userType === 'funcionario' || userType === 'admin') {
+            // Para funcionários e admins, campos permitidos são diferentes
+            const allowedFields = ['name', 'email', 'avatar'];
+            const filteredData = {};
+            for (const field of allowedFields) {
+                if (personalData[field] !== undefined) {
+                    filteredData[field] = personalData[field];
+                }
             }
+            updatedUser = await employeeService_1.EmployeeService.updateEmployeePersonalInfo(userId, filteredData);
         }
-        const updatedUser = await userService_1.UserService.updatePersonalInfo(userId, filteredData);
+        else {
+            // Para clientes, campos incluem contact (telefone)
+            const allowedFields = ['name', 'email', 'contact', 'avatar'];
+            const filteredData = {};
+            for (const field of allowedFields) {
+                if (personalData[field] !== undefined) {
+                    filteredData[field] = personalData[field];
+                }
+            }
+            updatedUser = await userService_1.UserService.updatePersonalInfo(userId, filteredData);
+        }
         res.status(200).json({
             success: true,
             message: 'Informações pessoais atualizadas com sucesso',
@@ -87,7 +114,7 @@ const updatePersonalInfo = async (req, res) => {
                 id: updatedUser.id,
                 name: updatedUser.name,
                 email: updatedUser.email,
-                contact: updatedUser.contact
+                contact: 'contact' in updatedUser ? updatedUser.contact : null // Funcionários podem não ter contact
             }
         });
     }

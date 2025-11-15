@@ -6,6 +6,7 @@
     "dev": "ts-node-dev --respawn --transpile-only --poll src/server.ts",
     "build": "tsc",
     "prebuild": "npx prisma generate",
+    "postbuild": "xcopy src\\generated dist\\generated /E /I /H /Y 2>nul || cp -r src/generated dist/ || echo 'Copy command failed, but build may still work'",
     "prisma": "prisma",
     "seed": "ts-node prisma/seed.ts",
     "start": "node dist/server.js",

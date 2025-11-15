@@ -30,6 +30,7 @@ const store_1 = __importDefault(require("./store"));
 const profile_1 = __importDefault(require("./profile"));
 const cart_1 = __importDefault(require("./cart"));
 const order_1 = __importDefault(require("./order"));
+const report_1 = __importDefault(require("./report"));
 const router = (0, express_1.Router)();
 // Montagem das rotas por domínio
 router.use('/user', user_1.default);
@@ -42,5 +43,6 @@ router.use('/store', store_1.default);
 router.use('/cart', cart_1.default);
 router.use('/profile', profile_1.default);
 router.use('/order', order_1.default);
+router.use('/report', report_1.default);
 exports.default = router;
 //# sourceMappingURL=index.js.map
