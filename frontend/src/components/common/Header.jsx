@@ -61,13 +61,16 @@ const Header = () => {
           if (response.user) {
             console.log("👤 Usuário válido, buscando dados completos do perfil...");
 
-            // Buscar dados completos do perfil incluindo avatar
+            // Buscar dados completos do perfil incluindo avatar e dados atualizados
             try {
               const profileData = await userService.getProfile();
               console.log("📄 Dados do perfil carregados:", profileData);
               setUser({
                 ...response.user,
-                avatar: profileData.avatar
+                name: profileData.name, // Usar nome atualizado do perfil
+                email: profileData.email, // Usar email atualizado do perfil
+                avatar: profileData.avatar,
+                contact: profileData.contact // Incluir contato se disponível
               });
             } catch (profileError) {
               console.log("⚠️ Erro ao buscar perfil, usando dados básicos:", profileError.message);
@@ -123,11 +126,14 @@ const Header = () => {
    */
   const handleLogin = async (userData) => {
     try {
-      // Buscar dados completos do perfil incluindo avatar
+      // Buscar dados completos do perfil incluindo avatar e dados atualizados
       const profileData = await userService.getProfile();
       setUser({
         ...userData,
-        avatar: profileData.avatar
+        name: profileData.name, // Usar nome atualizado do perfil
+        email: profileData.email, // Usar email atualizado do perfil
+        avatar: profileData.avatar,
+        contact: profileData.contact // Incluir contato se disponível
       });
     } catch (error) {
       console.log("⚠️ Erro ao buscar perfil no login, usando dados básicos:", error.message);

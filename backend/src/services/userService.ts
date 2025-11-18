@@ -114,6 +114,28 @@ export class UserService {
      * @param userId - ID do usuário autenticado.
      * @param personalData - Dados pessoais a serem atualizados (name, email, contact, avatar).
      */
+    /**
+     * Gera um novo token JWT para o usuário com dados atualizados
+     * @param user - Dados do usuário
+     * @param userType - Tipo do usuário ('cliente', 'funcionario' ou 'admin')
+     * @returns Token JWT
+     */
+    static generateToken(user: any, userType: 'cliente' | 'funcionario' | 'admin'): string {
+        const secret = process.env.JWT_SECRET || 'fallback-secret-change-in-production';
+        return jwt.sign(
+            {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                contact: 'contact' in user ? user.contact : null,
+                userType: userType,
+                cargoId: 'cargoId' in user ? user.cargoId : null
+            },
+            secret,
+            { expiresIn: '24h' }
+        );
+    }
+
     static async updatePersonalInfo(userId: number, personalData: { name?: string; email?: string; contact?: string; avatar?: string | null | undefined }) {
         try {
             // Validações básicas

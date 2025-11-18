@@ -113,6 +113,9 @@ export const updatePersonalInfo = async (req: Request, res: Response) => {
             updatedUser = await UserService.updatePersonalInfo(userId, filteredData);
         }
 
+        // Gerar novo token JWT com dados atualizados
+        const newToken = UserService.generateToken(updatedUser, userType);
+
         res.status(200).json({
             success: true,
             message: 'Informações pessoais atualizadas com sucesso',
@@ -121,7 +124,8 @@ export const updatePersonalInfo = async (req: Request, res: Response) => {
                 name: updatedUser.name,
                 email: updatedUser.email,
                 contact: 'contact' in updatedUser ? updatedUser.contact : null // Funcionários podem não ter contact
-            }
+            },
+            token: newToken // Novo token com dados atualizados
         });
     } catch (error) {
         console.error("Controller Error - updatePersonalInfo:", error);
