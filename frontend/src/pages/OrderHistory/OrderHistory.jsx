@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/use-auth.js";
 import { orderService } from "../../api";
 import { useToast } from "../../hooks/use-toast";
+import { useCart } from "../../hooks/useCart.jsx";
 
 /**
  * OrderHistory - Página de histórico de pedidos do cliente
@@ -62,6 +63,11 @@ const OrderHistory = () => {
    */
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
+
+  /**
+   * Hook do carrinho para adicionar itens
+   */
+  const { addItem } = useCart();
 
   /**
    * Estado dos pedidos carregados do backend
@@ -135,9 +141,11 @@ const OrderHistory = () => {
             status: mapOrderStatus(order.status),
             total: parseFloat(order.precoTotal),
             items: order.produtos.map(produto => ({
+              id: produto.produto.id,
               name: produto.produto.name,
               quantity: produto.quantidade,
-              price: parseFloat(produto.precoUnitario)
+              price: parseFloat(produto.precoUnitario),
+              product: produto.produto // Mantém referência completa ao produto
             })),
             deliveryAddress: order.endereco ? formatAddress(order.endereco) : "Endereço não informado"
           };
@@ -316,6 +324,38 @@ const OrderHistory = () => {
   };
 
   /**
+   * Manipula o clique no botão "Pedir Novamente"
+   * Adiciona todos os itens do pedido anterior ao carrinho
+   * @param {object} order - Pedido selecionado para reordenar
+   */
+  const handleReorder = async (order) => {
+    try {
+      // Para cada item do pedido, adiciona ao carrinho
+      for (const item of order.items) {
+        // Usa o objeto produto completo disponível no item
+        await addItem(item.product, item.quantity);
+      }
+
+      // Mostra mensagem de sucesso
+      toast({
+        title: "Itens adicionados ao carrinho",
+        description: `${order.items.length} item(s) foram adicionados ao seu carrinho.`,
+      });
+
+      // Redireciona para o checkout
+      navigate('/checkout');
+
+    } catch (error) {
+      console.error('Erro ao reordenar pedido:', error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao adicionar itens",
+        description: "Não foi possível adicionar os itens ao carrinho. Tente novamente.",
+      });
+    }
+  };
+
+  /**
    * Carrega pedidos quando o componente monta
    */
   useEffect(() => {
@@ -464,7 +504,10 @@ const OrderHistory = () => {
                         Acompanhar Pedido
                       </Button>
                       {order.status === "delivered" && (
-                        <Button size="sm">
+                        <Button
+                          size="sm"
+                          onClick={() => handleReorder(order)}
+                        >
                           Pedir Novamente
                         </Button>
                       )}
