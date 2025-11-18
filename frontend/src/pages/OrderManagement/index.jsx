@@ -514,7 +514,6 @@ const OrderManagement = () => {
         const labels = {
             pending: 'Pendente',
             preparing: 'Preparando',
-            ready: 'Pronto',
             en_route: 'A caminho',
             delivered: 'Entregue',
             cancelled: 'Cancelado',
@@ -537,7 +536,6 @@ const OrderManagement = () => {
             pending: `Olá ${customerName}! 💳 Seu pedido #${orderId} está aguardando confirmação do pagamento. Assim que aprovado, começaremos a preparar!`,
             payment_approved: `Olá ${customerName}! 💰 Pagamento do pedido #${orderId} aprovado! Agora vamos começar a preparar seu pedido.`,
             preparing: `Olá ${customerName}! 👨‍🍳 Começamos a preparar seu pedido #${orderId}! Em breve estará pronto para entrega.`,
-            ready: `Olá ${customerName}! 📦 Seu pedido #${orderId} está pronto! Aguarde o entregador ou venha buscar.`,
             en_route: `Olá ${customerName}! 🚚 Seu pedido #${orderId} saiu para entrega! O entregador chegará em breve.`,
             delivered: `Olá ${customerName}! 🎉 Seu pedido #${orderId} foi entregue com sucesso! Obrigado pela preferência!`,
             cancelled: `Olá ${customerName}. 😔 Infelizmente seu pedido #${orderId} foi cancelado. Entre em contato conosco para mais informações.`,

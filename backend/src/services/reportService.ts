@@ -33,6 +33,8 @@ export class ReportsService {
     const peakHours = await ReportsRepository.getPeakHours(start, end);
     const salesByDay = await ReportsRepository.getSalesByDay(start, end);
     const activeCustomers = await ReportsRepository.getActiveCustomers(start, end);
+    const averagePreparationTime = await ReportsRepository.getAveragePreparationTime(start, end);
+    const averageDeliveryTime = await ReportsRepository.getAverageDeliveryTime(start, end);
 
     return {
       summary: {
@@ -48,6 +50,8 @@ export class ReportsService {
       peakHours,
       operational: {
         activeCustomers,
+        averagePreparationTime,
+        averageDeliveryTime,
       },
     };
   }

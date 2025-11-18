@@ -69,11 +69,6 @@ const OrderStatusBadge = ({ status, className = '' }) => {
                     label: 'Em Preparo',
                     className: 'bg-cyan-100 text-cyan-800 border-cyan-200'
                 };
-            case 'ready':
-                return {
-                    label: 'Pronto',
-                    className: 'bg-purple-100 text-purple-800 border-purple-200'
-                };
             case 'en_route':
                 return {
                     label: 'A Caminho',

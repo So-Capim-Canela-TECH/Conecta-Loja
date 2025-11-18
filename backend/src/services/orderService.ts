@@ -197,8 +197,16 @@ export class OrderService {
                 throw new Error("Pedido não encontrado");
             }
 
+            console.log('🔄 Atualização de status:', {
+                pedidoId: id,
+                statusAtual: pedidoAtual.status,
+                novoStatus: novoStatus,
+                statusIguais: pedidoAtual.status === novoStatus
+            });
+
             // Se o status não mudou, não faz nada
             if (pedidoAtual.status === novoStatus) {
+                console.log('⚠️ Status não mudou, retornando pedido atual');
                 return pedidoAtual;
             }
 
