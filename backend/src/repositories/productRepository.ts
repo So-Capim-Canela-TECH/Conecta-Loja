@@ -74,7 +74,26 @@ export class ProductRepository {
       skip,
       take,
       where,
-      include: includeCategory ? { category: true } : undefined,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        categoryId: true,
+        available: true,
+        estoque: true,
+        image: true,
+        discount: true,
+        discountType: true,
+        createdAt: true,
+        updatedAt: true,
+        category: includeCategory ? {
+          select: {
+            id: true,
+            name: true
+          }
+        } : false,
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -88,8 +107,25 @@ export class ProductRepository {
   static async findProductsByCategory(categoryId: number) {
     return await prisma.product.findMany({
       where: { categoryId },
-      include: {
-        category: true,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        categoryId: true,
+        available: true,
+        estoque: true,
+        image: true,
+        discount: true,
+        discountType: true,
+        createdAt: true,
+        updatedAt: true,
+        category: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -152,8 +188,25 @@ export class ProductRepository {
   static async findAvailableProducts() {
     return await prisma.product.findMany({
       where: { available: true },
-      include: {
-        category: true,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        categoryId: true,
+        available: true,
+        estoque: true,
+        image: true,
+        discount: true,
+        discountType: true,
+        createdAt: true,
+        updatedAt: true,
+        category: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
       },
       orderBy: { createdAt: 'desc' },
     });

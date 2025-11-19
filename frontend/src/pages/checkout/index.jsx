@@ -327,6 +327,16 @@ const Checkout = () => {
         precoUnitario: item.product.price
       }));
 
+      // Validação final de estoque antes de criar o pedido
+      for (const item of items) {
+        const requestedQuantity = item.quantity;
+        const availableStock = item.product?.estoque || 0;
+
+        if (requestedQuantity > availableStock) {
+          throw new Error(`Estoque insuficiente para "${item.product?.name}". Disponível: ${availableStock}, solicitado: ${requestedQuantity}`);
+        }
+      }
+
       // Criar o pedido
       const orderData = {
         usuarioId: user.id,
