@@ -436,7 +436,9 @@ const OrderManagement = () => {
      */
     const handleContactCustomer = (order) => {
         const message = `Olá ${order?.customerName}! Sobre seu pedido #${order?.id}...`;
-        const whatsappUrl = `https://wa.me/55${order?.customerPhone?.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+        // Usar número da loja (não do cliente)
+        const storePhone = storeInfo?.contact ? storeInfo.contact.replace(/\D/g, '') : '89981156819';
+        const whatsappUrl = `https://wa.me/55${storePhone}?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
         showNotification(`Contato iniciado com ${order?.customerName}`, 'success');
     };
@@ -508,7 +510,9 @@ const OrderManagement = () => {
                 // Abrir WhatsApp com mensagem pré-programada se foi solicitado
                 if (updateData?.notifyCustomer) {
                     const statusMessage = getStatusWhatsAppMessage(order.customerName, order.id, updateData?.status);
-                    const whatsappUrl = `https://wa.me/55${order.customerPhone?.replace(/\D/g, '')}?text=${encodeURIComponent(statusMessage)}`;
+                    // Usar número da loja para notificações (não do cliente)
+                    const storePhone = storeInfo?.contact ? storeInfo.contact.replace(/\D/g, '') : '89981156819';
+                    const whatsappUrl = `https://wa.me/55${storePhone}?text=${encodeURIComponent(statusMessage)}`;
 
                     // Abrir WhatsApp em nova aba
                     window.open(whatsappUrl, '_blank');

@@ -90,10 +90,19 @@ export const exportToCSV = (data, filename = "export.csv") => {
  * @param {Object} orderData - Dados do pedido
  * @param {Object} customerData - Dados do cliente
  * @param {Array} items - Itens do pedido
+ * @param {string} storePhoneNumber - Número do WhatsApp da loja (opcional)
  * @returns {string} - URL do WhatsApp
  */
-export const generateWhatsAppOrderURL = (orderData, customerData, items) => {
-  const phoneNumber = "89981156819"; // Número da loja
+export const generateWhatsAppOrderURL = (
+  orderData,
+  customerData,
+  items,
+  storePhoneNumber = null
+) => {
+  // Usar número da loja se fornecido, senão usar padrão
+  const phoneNumber = storePhoneNumber
+    ? storePhoneNumber.replace(/\D/g, "")
+    : "89981156819";
 
   // Formatar data e hora
   const orderDate = formatDateTime(new Date());
@@ -172,8 +181,19 @@ const formatPhoneNumber = (phone) => {
  * @param {Object} orderData - Dados do pedido
  * @param {Object} customerData - Dados do cliente
  * @param {Array} items - Itens do pedido
+ * @param {string} storePhoneNumber - Número do WhatsApp da loja (opcional)
  */
-export const openWhatsAppOrder = (orderData, customerData, items) => {
-  const whatsappURL = generateWhatsAppOrderURL(orderData, customerData, items);
+export const openWhatsAppOrder = (
+  orderData,
+  customerData,
+  items,
+  storePhoneNumber = null
+) => {
+  const whatsappURL = generateWhatsAppOrderURL(
+    orderData,
+    customerData,
+    items,
+    storePhoneNumber
+  );
   window.open(whatsappURL, "_blank");
 };

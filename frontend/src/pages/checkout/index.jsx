@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/use-auth.js';
 import { addressService, orderService } from '../../api';
 import { useToast } from '../../hooks/use-toast';
 import { openWhatsAppOrder } from '../../utils';
+import { useStore } from '../../contexts/StoreContext';
 import Button from '../../components/ui/ButtonDash';
 import OrderConfirmation from '../../components/ui/OrderConfirmation';
 import { Input } from '@/components/ui/input';
@@ -62,6 +63,9 @@ const Checkout = () => {
   const [loading, setLoading] = useState(true);
   const [loadingAddresses, setLoadingAddresses] = useState(true);
   const [creatingOrder, setCreatingOrder] = useState(false);
+
+  // Hook da loja para informações dinâmicas
+  const { storeInfo } = useStore();
   const [showAddAddress, setShowAddAddress] = useState(false);
 
   // Estados para confirmação do pedido
@@ -412,8 +416,11 @@ const Checkout = () => {
     if (confirmedOrderData) {
       const { orderData, customerData, whatsappItems } = confirmedOrderData;
 
-      // Abrir WhatsApp
-      openWhatsAppOrder(orderData, customerData, whatsappItems);
+      // Número do WhatsApp da loja (dinâmico)
+      const storePhoneNumber = storeInfo?.contact;
+
+      // Abrir WhatsApp com número da loja
+      openWhatsAppOrder(orderData, customerData, whatsappItems, storePhoneNumber);
 
       // Limpar carrinho e fechar após redirecionamento
       setTimeout(() => {
