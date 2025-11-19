@@ -14,7 +14,6 @@ const QuickActionTiles = ({ userType }) => {
       icon: 'Package',
       color: 'bg-primary text-primary-foreground',
       route: '/produtos', 
-      stats: '0 produtos ativos'
     },
     {
       id: 'orders',
@@ -23,7 +22,6 @@ const QuickActionTiles = ({ userType }) => {
       icon: 'ShoppingCart',
       color: 'bg-secondary text-secondary-foreground',
       route: '/pedidos',
-      stats: '0 pedidos este mês'
     },
     {
       id: 'analytics',
@@ -32,7 +30,6 @@ const QuickActionTiles = ({ userType }) => {
       icon: 'BarChart3',
       color: 'bg-success text-success-foreground',
       route: '/relatorios',
-      stats: 'R$ 0 este mês'
     },
     {
       id: 'employees',
@@ -41,7 +38,6 @@ const QuickActionTiles = ({ userType }) => {
       icon: 'Users',
       color: 'bg-purple-600 text-white',
       route: '/store-settings',
-      stats: '0 funcionários ativos'
     },
     {
       id: 'settings',
