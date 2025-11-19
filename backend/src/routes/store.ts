@@ -6,7 +6,9 @@ import {
     listEmployees,
     deleteEmployee,
     getStoreConfig,
-    updateStoreConfig
+    updateStoreConfig,
+    getStoreInfo,
+    updateStoreInfo
 } from '../controllers/storeControllers'; // Note o "s" no final de storeControllers
 
 // 2. IMPORTE OS MIDDLEWARES DE SEGURANÇA E UPLOAD
@@ -47,6 +49,21 @@ router.put(
     updateStoreConfig
 );
 
+// --- ROTAS DE INFORMAÇÕES DA LOJA ---
+
+/**
+ * @route GET /api/store/info
+ * @desc Busca as informações básicas da loja (nome, contato, endereço, etc.)
+ * @access Admin
+ */
+router.get('/info', authenticateToken, adminOnly, getStoreInfo);
+
+/**
+ * @route PUT /api/store/info
+ * @desc Atualiza as informações básicas da loja
+ * @access Admin
+ */
+router.put('/info', authenticateToken, adminOnly, updateStoreInfo);
 
 // --- ROTAS DE FUNCIONÁRIOS (AGORA PROTEGIDAS) ---
 
