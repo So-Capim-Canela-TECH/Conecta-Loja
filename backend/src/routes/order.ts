@@ -37,6 +37,15 @@ router.get('/all', getAllOrders);
 router.get('/', getUserOrders);
 
 /**
+ * @route GET /api/order/:id
+ * @desc Rota para buscar detalhes de um pedido específico
+ * @access Privado
+ * @param {id: number} - ID do pedido (parâmetro de rota)
+ * @returns {object} Detalhes completos do pedido com histórico de status
+ */
+router.get('/:id', getOrderById);
+
+/**
  * @route POST /api/order/cadastrar
  * @desc Cria um novo pedido no sistema
  * @access Público (ou restrito conforme autenticação)

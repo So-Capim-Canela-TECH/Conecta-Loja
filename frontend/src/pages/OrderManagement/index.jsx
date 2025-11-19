@@ -392,11 +392,32 @@ const OrderManagement = () => {
 
     /**
      * Abre o modal de detalhes do pedido selecionado
+     * Busca dados completos do pedido incluindo histórico de status
      * @param {Object} order - Pedido a ser visualizado em detalhes
      */
-    const handleViewDetails = (order) => {
-        setSelectedOrder(order);
-        setIsDetailsModalOpen(true);
+    const handleViewDetails = async (order) => {
+        try {
+            // Busca dados completos do pedido com histórico de status
+            const fullOrderData = await orderService.getOrderById(order.id);
+
+            // Transforma os dados completos para o formato esperado pelo modal
+            const timelineData = fullOrderData.statusHistorico?.map(h => ({
+                status: getStatusLabel(h.status),
+                timestamp: h.createdAt,
+                note: h.observacao || ''
+            })) || [];
+
+            const transformedOrder = {
+                ...order, // Mantém os dados básicos já transformados
+                timeline: timelineData
+            };
+
+            setSelectedOrder(transformedOrder);
+            setIsDetailsModalOpen(true);
+        } catch (error) {
+            console.error('Erro ao buscar detalhes do pedido:', error);
+            showNotification('Erro ao carregar detalhes do pedido', 'error');
+        }
     };
 
     /**
@@ -512,9 +533,18 @@ const OrderManagement = () => {
      */
     const getStatusLabel = (status) => {
         const labels = {
-            pending: 'Pendente',
-            preparing: 'Preparando',
-            en_route: 'A caminho',
+            RECEBIDO: 'Recebido',
+            AGUARDANDO_PAGAMENTO: 'Aguardando Pagamento',
+            PAGAMENTO_APROVADO: 'Pagamento Aprovado',
+            PREPARO: 'Em Preparo',
+            ENVIADO_PARA_ENTREGA: 'Enviado para Entrega',
+            ENTREGUE: 'Entregue',
+            CANCELADO: 'Cancelado',
+            TENTATIVA_ENTREGA_FALHADA: 'Tentativa de Entrega Falhada',
+            // Manter compatibilidade com nomes antigos
+            pending: 'Aguardando Pagamento',
+            preparing: 'Em Preparo',
+            en_route: 'Enviado para Entrega',
             delivered: 'Entregue',
             cancelled: 'Cancelado',
             payment_approved: 'Pagamento Aprovado',

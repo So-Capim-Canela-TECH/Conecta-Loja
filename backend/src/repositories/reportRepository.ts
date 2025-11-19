@@ -136,45 +136,4 @@ export class ReportsRepository {
     return activeCustomers;
   }
 
-  /**
-   * Calcula o tempo médio de preparo dos pedidos
-   * Tempo entre RECEBIDO e PREPARO
-   */
-  static async getAveragePreparationTime(start: Date, end: Date) {
-    const result = await prisma.$queryRawUnsafe<
-      { avg_preparation_time: number }[]
-    >(`
-      SELECT
-        AVG(EXTRACT(EPOCH FROM (preparo.created_at - recebido.created_at))) / 60 AS avg_preparation_time
-      FROM pedido_status_historico recebido
-      JOIN pedido_status_historico preparo ON preparo."pedidoId" = recebido."pedidoId"
-      WHERE recebido.status = 'RECEBIDO'
-        AND preparo.status = 'PREPARO'
-        AND recebido.created_at BETWEEN '${start.toISOString()}' AND '${end.toISOString()}'
-        AND preparo.created_at BETWEEN '${start.toISOString()}' AND '${end.toISOString()}'
-    `);
-
-    return result[0]?.avg_preparation_time ? Math.round(Number(result[0].avg_preparation_time)) : 0;
-  }
-
-  /**
-   * Calcula o tempo médio de entrega dos pedidos
-   * Tempo entre ENVIADO_PARA_ENTREGA e ENTREGUE
-   */
-  static async getAverageDeliveryTime(start: Date, end: Date) {
-    const result = await prisma.$queryRawUnsafe<
-      { avg_delivery_time: number }[]
-    >(`
-      SELECT
-        AVG(EXTRACT(EPOCH FROM (entregue.created_at - enviado.created_at))) / 60 AS avg_delivery_time
-      FROM pedido_status_historico enviado
-      JOIN pedido_status_historico entregue ON entregue."pedidoId" = enviado."pedidoId"
-      WHERE enviado.status = 'ENVIADO_PARA_ENTREGA'
-        AND entregue.status = 'ENTREGUE'
-        AND enviado.created_at BETWEEN '${start.toISOString()}' AND '${end.toISOString()}'
-        AND entregue.created_at BETWEEN '${start.toISOString()}' AND '${end.toISOString()}'
-    `);
-
-    return result[0]?.avg_delivery_time ? Math.round(Number(result[0].avg_delivery_time)) : 0;
-  }
 }
