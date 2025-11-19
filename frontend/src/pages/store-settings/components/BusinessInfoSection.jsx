@@ -115,8 +115,6 @@ const BusinessInfoSection = () => {
     try {
       setIsSaving(true);
 
-      console.log('📤 Enviando dados para API:', storeInfo);
-
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/store/info`, {
         method: 'PUT',
         headers: {

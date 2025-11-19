@@ -102,7 +102,6 @@ export const getStoreInfo = async (req: Request, res: Response) => {
 export const updateStoreInfo = async (req: Request, res: Response) => {
     try {
         const { name, contact, email, description, street, city, state, zipCode } = req.body;
-        console.log('📥 Recebendo dados da loja:', { name, contact, email, description, street, city, state, zipCode });
 
         const updatedInfo = await StoreService.updateStoreInfo({
             name,
