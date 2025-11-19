@@ -76,3 +76,54 @@ export const updateStoreConfig = async (req: Request, res: Response) => {
         return res.status(500).json({error: "Erro interno ao atualizar configurações."});
     }
 };
+
+/**
+ * Controller: Busca as informações básicas da loja.
+ */
+export const getStoreInfo = async (req: Request, res: Response) => {
+    try {
+        const storeInfo = await StoreService.getStoreInfo();
+        return res.status(200).json({
+            success: true,
+            data: storeInfo
+        });
+    } catch (error: any) {
+        console.error("Erro ao buscar informações da loja:", error);
+        return res.status(500).json({
+            success: false,
+            error: "Erro interno ao buscar informações da loja."
+        });
+    }
+};
+
+/**
+ * Controller: Atualiza as informações básicas da loja.
+ */
+export const updateStoreInfo = async (req: Request, res: Response) => {
+    try {
+        const { name, contact, email, description, street, city, state, zipCode } = req.body;
+
+        const updatedInfo = await StoreService.updateStoreInfo({
+            name,
+            contact,
+            email,
+            description,
+            street,
+            city,
+            state,
+            zipCode
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Informações da loja atualizadas com sucesso.",
+            data: updatedInfo
+        });
+    } catch (error: any) {
+        console.error("Erro ao atualizar informações da loja:", error);
+        return res.status(500).json({
+            success: false,
+            error: "Erro interno ao atualizar informações da loja."
+        });
+    }
+};

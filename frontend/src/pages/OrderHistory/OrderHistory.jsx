@@ -9,6 +9,35 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/use-auth.js";
 import { orderService } from "../../api";
 import { useToast } from "../../hooks/use-toast";
+import { useCart } from "../../hooks/useCart.jsx";
+
+/**
+ * Converte status técnico para label legível em português
+ * @param {string} status - Status técnico do pedido
+ * @returns {string} Label legível do status
+ */
+const getStatusLabel = (status) => {
+    const labels = {
+        RECEBIDO: 'Recebido',
+        AGUARDANDO_PAGAMENTO: 'Aguardando Pagamento',
+        PAGAMENTO_APROVADO: 'Pagamento Aprovado',
+        PREPARO: 'Em Preparo',
+        ENVIADO_PARA_ENTREGA: 'Enviado para Entrega',
+        ENTREGUE: 'Entregue',
+        CANCELADO: 'Cancelado',
+        TENTATIVA_ENTREGA_FALHADA: 'Tentativa de Entrega Falhada',
+        // Manter compatibilidade com nomes antigos
+        pending: 'Aguardando Pagamento',
+        preparing: 'Em Preparo',
+        en_route: 'Enviado para Entrega',
+        delivered: 'Entregue',
+        cancelled: 'Cancelado',
+        payment_approved: 'Pagamento Aprovado',
+        delivery_failed: 'Tentativa de Entrega Falhada'
+    };
+
+    return labels?.[status] || status;
+};
 
 /**
  * OrderHistory - Página de histórico de pedidos do cliente
@@ -62,6 +91,11 @@ const OrderHistory = () => {
    */
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
+
+  /**
+   * Hook do carrinho para adicionar itens
+   */
+  const { addItem } = useCart();
 
   /**
    * Estado dos pedidos carregados do backend
@@ -124,8 +158,8 @@ const OrderHistory = () => {
           const createdAt = new Date(order.createdAt);
 
           return {
-            id: order.numeroPedido || order.id,
-            numeroPedido: order.numeroPedido,
+            id: order.id, // Sempre usar o ID numérico real do banco
+            numeroPedido: order.numeroPedido, // ID formatado para display
             createdAt: order.createdAt, // Manter o campo original para o modal
             date: !isNaN(createdAt.getTime()) ? createdAt.toLocaleDateString('pt-BR') : 'Data indisponível',
             time: !isNaN(createdAt.getTime()) ? createdAt.toLocaleTimeString('pt-BR', {
@@ -135,9 +169,11 @@ const OrderHistory = () => {
             status: mapOrderStatus(order.status),
             total: parseFloat(order.precoTotal),
             items: order.produtos.map(produto => ({
+              id: produto.produto.id,
               name: produto.produto.name,
               quantity: produto.quantidade,
-              price: parseFloat(produto.precoUnitario)
+              price: parseFloat(produto.precoUnitario),
+              product: produto.produto // Mantém referência completa ao produto
             })),
             deliveryAddress: order.endereco ? formatAddress(order.endereco) : "Endereço não informado"
           };
@@ -268,7 +304,7 @@ const OrderHistory = () => {
    * @type {Array} filteredOrders - Array de pedidos filtrados
    */
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = (order.id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = ((order.numeroPedido || order.id || '').toString()).toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.items.some(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesFilter = selectedFilter === "all" || order.status === selectedFilter;
     return matchesSearch && matchesFilter;
@@ -283,20 +319,31 @@ const OrderHistory = () => {
     setIsTrackingModalOpen(true);
 
     // Carregar detalhes completos do pedido se necessário
-    if (!order.produtos || !order.endereco) {
+    if (!order.produtos || !order.endereco || !order.statusHistorico) {
       setLoadingOrderDetails(true);
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/order/${order.id}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        // Usar o ID real do banco de dados (order.id é o ID numérico)
+        const numericId = order.id;
 
-        const data = await response.json();
+        const response = await orderService.getOrderById(numericId);
 
-        if (response.ok && data.success) {
-          setSelectedOrder(data.order);
+        if (response.success) {
+          const fullOrderData = response.order;
+
+          // Transformar dados para incluir timeline completa
+          const transformedOrder = {
+            ...order,
+            produtos: fullOrderData.produtos,
+            endereco: fullOrderData.endereco,
+            statusHistorico: fullOrderData.statusHistorico,
+            timeline: fullOrderData.statusHistorico?.map(h => ({
+              status: getStatusLabel(h.status),
+              timestamp: h.createdAt,
+              note: h.observacao || ''
+            })) || []
+          };
+
+          setSelectedOrder(transformedOrder);
         }
       } catch (error) {
         console.error('Erro ao carregar detalhes do pedido:', error);
@@ -313,6 +360,38 @@ const OrderHistory = () => {
     setIsTrackingModalOpen(false);
     setSelectedOrder(null);
     setLoadingOrderDetails(false);
+  };
+
+  /**
+   * Manipula o clique no botão "Pedir Novamente"
+   * Adiciona todos os itens do pedido anterior ao carrinho
+   * @param {object} order - Pedido selecionado para reordenar
+   */
+  const handleReorder = async (order) => {
+    try {
+      // Para cada item do pedido, adiciona ao carrinho
+      for (const item of order.items) {
+        // Usa o objeto produto completo disponível no item
+        await addItem(item.product, item.quantity);
+      }
+
+      // Mostra mensagem de sucesso
+      toast({
+        title: "Itens adicionados ao carrinho",
+        description: `${order.items.length} item(s) foram adicionados ao seu carrinho.`,
+      });
+
+      // Redireciona para o checkout
+      navigate('/checkout');
+
+    } catch (error) {
+      console.error('Erro ao reordenar pedido:', error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao adicionar itens",
+        description: "Não foi possível adicionar os itens ao carrinho. Tente novamente.",
+      });
+    }
   };
 
   /**
@@ -414,7 +493,7 @@ const OrderHistory = () => {
                 <CardHeader className="pb-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-lg">{order.id}</CardTitle>
+                      <CardTitle className="text-lg">{order.numeroPedido || order.id}</CardTitle>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
@@ -464,7 +543,10 @@ const OrderHistory = () => {
                         Acompanhar Pedido
                       </Button>
                       {order.status === "delivered" && (
-                        <Button size="sm">
+                        <Button
+                          size="sm"
+                          onClick={() => handleReorder(order)}
+                        >
                           Pedir Novamente
                         </Button>
                       )}
@@ -540,26 +622,26 @@ const OrderHistory = () => {
                       <div>
                         <h3 className="font-medium text-foreground mb-4">Histórico do Pedido</h3>
                         <div className="space-y-4">
-                          {selectedOrder.statusHistorico && selectedOrder.statusHistorico.length > 0 ? (
-                            selectedOrder.statusHistorico.map((historico, index) => (
+                          {selectedOrder.timeline && selectedOrder.timeline.length > 0 ? (
+                            selectedOrder.timeline.map((event, index) => (
                               <div key={index} className="flex items-start space-x-3">
                                 <div className={`w-3 h-3 rounded-full mt-1.5 flex-shrink-0 ${
-                                  index === selectedOrder.statusHistorico.length - 1
+                                  index === selectedOrder.timeline.length - 1
                                     ? 'bg-primary'
                                     : 'bg-green-500'
                                 }`}></div>
                                 <div className="flex-1">
                                   <p className={`text-sm font-medium ${
-                                    index === selectedOrder.statusHistorico.length - 1
+                                    index === selectedOrder.timeline.length - 1
                                       ? 'text-foreground'
                                       : 'text-green-700'
                                   }`}>
-                                    {getStatusText(historico.status)}
+                                    {event.status}
                                   </p>
                                   <p className="text-xs text-muted-foreground">
                                     {(() => {
                                       try {
-                                        const date = new Date(historico.createdAt);
+                                        const date = new Date(event.timestamp);
                                         if (isNaN(date.getTime())) {
                                           return 'Data indisponível';
                                         }
@@ -574,13 +656,10 @@ const OrderHistory = () => {
                                         return 'Data indisponível';
                                       }
                                     })()}
-                                    {historico.funcionario && (
-                                      <span> • por {historico.funcionario.name}</span>
-                                    )}
                                   </p>
-                                  {historico.observacao && (
+                                  {event.note && (
                                     <p className="text-xs text-muted-foreground mt-1 italic">
-                                      "{historico.observacao}"
+                                      "{event.note}"
                                     </p>
                                   )}
                                 </div>

@@ -457,6 +457,16 @@ export const CartProvider = ({ children }) => {
    * await addItemToCart(product, 2); // Adiciona 2 unidades
    */
   const addItemToCart = useCallback(async (product, quantity = 1) => {
+    // Validação de estoque no frontend
+    const currentQuantityInCart = state.items.find(item => item.product.id === product.id)?.quantity || 0;
+    const totalQuantity = currentQuantityInCart + quantity;
+
+    if (product.estoque !== undefined && totalQuantity > product.estoque) {
+      console.warn(`Tentativa de adicionar ${totalQuantity} unidades, mas só há ${product.estoque} em estoque`);
+      // TODO: Mostrar notificação de erro para o usuário
+      return false;
+    }
+
     if (state.isLoggedIn) {
       // Se usuário está logado, SEMPRE usa API (mesmo se carrinho ainda não foi carregado)
       try {
@@ -467,6 +477,7 @@ export const CartProvider = ({ children }) => {
             type: CART_ACTIONS.SYNC_WITH_SERVER,
             payload: { items: transformedItems }
           });
+          return true;
         }
       } catch (error) {
         console.error('Erro ao adicionar item ao carrinho do servidor:', error);
@@ -475,6 +486,7 @@ export const CartProvider = ({ children }) => {
           type: CART_ACTIONS.ADD_ITEM,
           payload: { product, quantity }
         });
+        return true;
       }
     } else {
       // Se não está logado, usa localStorage
@@ -482,8 +494,9 @@ export const CartProvider = ({ children }) => {
         type: CART_ACTIONS.ADD_ITEM,
         payload: { product, quantity }
       });
+      return true;
     }
-  }, [state.isLoggedIn]);
+  }, [state.isLoggedIn, state.items]);
 
   /**
    * Remove um item específico do carrinho (com sincronização automática)

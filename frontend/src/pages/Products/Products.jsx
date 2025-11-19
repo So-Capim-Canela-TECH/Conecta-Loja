@@ -90,7 +90,18 @@ const Products = () => {
    */
   const handleAddToCart = async (product) => {
     try {
-      await addItem(product);
+      const success = await addItem(product);
+
+      if (success === false) {
+        // Estoque insuficiente
+        toast({
+          title: 'Estoque insuficiente',
+          description: `Não há estoque suficiente para ${product.name}. Disponível: ${product.estoque} unidades.`,
+          variant: 'destructive',
+        });
+        return;
+      }
+
       toast({
         title: 'Produto adicionado!',
         description: `${product.name} foi adicionado ao carrinho.`,
@@ -99,7 +110,7 @@ const Products = () => {
       toast({
         title: 'Erro',
         description: 'Não foi possível adicionar o produto ao carrinho.',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     }
   };

@@ -31,6 +31,16 @@ export const orderService = {
   },
 
   /**
+   * Busca detalhes completos de um pedido específico
+   * @param {number} orderId - ID do pedido
+   * @returns {Promise} Detalhes completos do pedido com histórico de status
+   */
+  async getOrderById(orderId) {
+    const response = await api.get(`/order/${orderId}`);
+    return response.data;
+  },
+
+  /**
    * Busca todos os pedidos de um usuário
    * @param {number} usuarioId - ID do usuário
    * @returns {Promise} Lista de pedidos do usuário

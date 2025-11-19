@@ -1,4 +1,5 @@
 import React from 'react';
+import { useStore } from '../../contexts/StoreContext';
 
 /**
  * FloatingWhatsAppButton - Botão flutuante para contato via WhatsApp
@@ -14,8 +15,16 @@ import React from 'react';
  */
 
 const FloatingWhatsAppButton = () => {
-  const phoneNumber = "5589981156819"; // Número do footer
-  const message = "Olá! Gostaria de fazer um pedido na Conecta Loja. Poderia me ajudar com o cardápio?";
+  const { storeInfo } = useStore();
+
+  // Número dinâmico da loja (remove caracteres não numéricos e adiciona 55)
+  const phoneNumber = storeInfo?.contact
+    ? `55${storeInfo.contact.replace(/\D/g, '')}`
+    : "5589981156819"; // Fallback
+
+  // Mensagem dinâmica com nome da loja
+  const storeName = storeInfo?.name || 'Conecta Loja';
+  const message = `Olá! Gostaria de fazer um pedido na ${storeName}. Poderia me ajudar com o cardápio?`;
 
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 

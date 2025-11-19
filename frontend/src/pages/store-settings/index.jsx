@@ -47,12 +47,12 @@ const StoreSettings = () => {
    * @type {Array<{id: string, label: string, icon: string, description: string}>}
    */
   const tabs = [
-    // {
-    //   id: 'business',
-    //   label: 'Informações do Negócio',
-    //   icon: 'Building2',
-    //   description: 'Dados básicos e horário de funcionamento'
-    // },
+     {
+       id: 'business',
+       label: 'Informações do Negócio',
+       icon: 'Building2',
+       description: 'Dados básicos da loja e endereço'
+     },
      {
        id: 'branding',
        label: 'Marca e Visual',
@@ -111,8 +111,8 @@ const StoreSettings = () => {
    */
   const renderActiveSection = () => {
     switch (activeTab) {
-      // case 'business':
-      //   return <BusinessInfoSection />;
+       case 'business':
+         return <BusinessInfoSection />;
        case 'branding':
          return <BrandingSection />;
       case 'roles':

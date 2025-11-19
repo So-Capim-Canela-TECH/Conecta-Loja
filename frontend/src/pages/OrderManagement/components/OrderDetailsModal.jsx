@@ -4,6 +4,7 @@ import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 import OrderStatusBadge from './OrderStatusBadge';
 import { formatCurrency, formatDateTime } from '@/utils';
+import { useStore } from '../../../contexts/StoreContext';
 
 /**
  * OrderDetailsModal - Modal de detalhes completos do pedido
@@ -60,6 +61,9 @@ import { formatCurrency, formatDateTime } from '@/utils';
  * />
  */
 const OrderDetailsModal = ({ order, isOpen, onClose, onStatusUpdate, onContactCustomer }) => {
+    // Hook da loja para informações dinâmicas
+    const { storeInfo } = useStore();
+
     if (!isOpen || !order) return null;
 
     /**
@@ -68,7 +72,9 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onStatusUpdate, onContactCu
      */
     const handleWhatsAppContact = () => {
         const message = `Olá ${order?.customerName}! Sobre seu pedido #${order?.id}...`;
-        const whatsappUrl = `https://wa.me/55${order?.customerPhone?.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+        // Usar número da loja para contato (não do cliente)
+        const storePhone = storeInfo?.contact ? storeInfo.contact.replace(/\D/g, '') : '89981156819';
+        const whatsappUrl = `https://wa.me/55${storePhone}?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
         onContactCustomer(order);
     };

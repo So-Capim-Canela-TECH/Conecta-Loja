@@ -392,11 +392,32 @@ const OrderManagement = () => {
 
     /**
      * Abre o modal de detalhes do pedido selecionado
+     * Busca dados completos do pedido incluindo histórico de status
      * @param {Object} order - Pedido a ser visualizado em detalhes
      */
-    const handleViewDetails = (order) => {
-        setSelectedOrder(order);
-        setIsDetailsModalOpen(true);
+    const handleViewDetails = async (order) => {
+        try {
+            // Busca dados completos do pedido com histórico de status
+            const fullOrderData = await orderService.getOrderById(order.id);
+
+            // Transforma os dados completos para o formato esperado pelo modal
+            const timelineData = fullOrderData.statusHistorico?.map(h => ({
+                status: getStatusLabel(h.status),
+                timestamp: h.createdAt,
+                note: h.observacao || ''
+            })) || [];
+
+            const transformedOrder = {
+                ...order, // Mantém os dados básicos já transformados
+                timeline: timelineData
+            };
+
+            setSelectedOrder(transformedOrder);
+            setIsDetailsModalOpen(true);
+        } catch (error) {
+            console.error('Erro ao buscar detalhes do pedido:', error);
+            showNotification('Erro ao carregar detalhes do pedido', 'error');
+        }
     };
 
     /**
@@ -415,7 +436,9 @@ const OrderManagement = () => {
      */
     const handleContactCustomer = (order) => {
         const message = `Olá ${order?.customerName}! Sobre seu pedido #${order?.id}...`;
-        const whatsappUrl = `https://wa.me/55${order?.customerPhone?.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+        // Usar número da loja (não do cliente)
+        const storePhone = storeInfo?.contact ? storeInfo.contact.replace(/\D/g, '') : '89981156819';
+        const whatsappUrl = `https://wa.me/55${storePhone}?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
         showNotification(`Contato iniciado com ${order?.customerName}`, 'success');
     };
@@ -487,7 +510,9 @@ const OrderManagement = () => {
                 // Abrir WhatsApp com mensagem pré-programada se foi solicitado
                 if (updateData?.notifyCustomer) {
                     const statusMessage = getStatusWhatsAppMessage(order.customerName, order.id, updateData?.status);
-                    const whatsappUrl = `https://wa.me/55${order.customerPhone?.replace(/\D/g, '')}?text=${encodeURIComponent(statusMessage)}`;
+                    // Usar número da loja para notificações (não do cliente)
+                    const storePhone = storeInfo?.contact ? storeInfo.contact.replace(/\D/g, '') : '89981156819';
+                    const whatsappUrl = `https://wa.me/55${storePhone}?text=${encodeURIComponent(statusMessage)}`;
 
                     // Abrir WhatsApp em nova aba
                     window.open(whatsappUrl, '_blank');
@@ -512,10 +537,18 @@ const OrderManagement = () => {
      */
     const getStatusLabel = (status) => {
         const labels = {
-            pending: 'Pendente',
-            preparing: 'Preparando',
-            ready: 'Pronto',
-            en_route: 'A caminho',
+            RECEBIDO: 'Recebido',
+            AGUARDANDO_PAGAMENTO: 'Aguardando Pagamento',
+            PAGAMENTO_APROVADO: 'Pagamento Aprovado',
+            PREPARO: 'Em Preparo',
+            ENVIADO_PARA_ENTREGA: 'Enviado para Entrega',
+            ENTREGUE: 'Entregue',
+            CANCELADO: 'Cancelado',
+            TENTATIVA_ENTREGA_FALHADA: 'Tentativa de Entrega Falhada',
+            // Manter compatibilidade com nomes antigos
+            pending: 'Aguardando Pagamento',
+            preparing: 'Em Preparo',
+            en_route: 'Enviado para Entrega',
             delivered: 'Entregue',
             cancelled: 'Cancelado',
             payment_approved: 'Pagamento Aprovado',
@@ -537,7 +570,6 @@ const OrderManagement = () => {
             pending: `Olá ${customerName}! 💳 Seu pedido #${orderId} está aguardando confirmação do pagamento. Assim que aprovado, começaremos a preparar!`,
             payment_approved: `Olá ${customerName}! 💰 Pagamento do pedido #${orderId} aprovado! Agora vamos começar a preparar seu pedido.`,
             preparing: `Olá ${customerName}! 👨‍🍳 Começamos a preparar seu pedido #${orderId}! Em breve estará pronto para entrega.`,
-            ready: `Olá ${customerName}! 📦 Seu pedido #${orderId} está pronto! Aguarde o entregador ou venha buscar.`,
             en_route: `Olá ${customerName}! 🚚 Seu pedido #${orderId} saiu para entrega! O entregador chegará em breve.`,
             delivered: `Olá ${customerName}! 🎉 Seu pedido #${orderId} foi entregue com sucesso! Obrigado pela preferência!`,
             cancelled: `Olá ${customerName}. 😔 Infelizmente seu pedido #${orderId} foi cancelado. Entre em contato conosco para mais informações.`,

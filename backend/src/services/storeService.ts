@@ -64,4 +64,39 @@ export class StoreService {
     static async updateConfig(data: any) {
         return StoreRepository.updateConfig(data);
     }
+
+    /**
+     * Serviço: busca as informações básicas da loja.
+     */
+    static async getStoreInfo() {
+        try {
+            const storeInfo = await StoreRepository.getStoreInfo();
+            if (!storeInfo) {
+                throw new Error("Informações da loja não encontradas.");
+            }
+            return storeInfo;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+     * Serviço: atualiza as informações básicas da loja.
+     */
+    static async updateStoreInfo(data: {
+        name?: string;
+        contact?: string;
+        email?: string;
+        description?: string;
+        street?: string;
+        city?: string;
+        state?: string;
+        zipCode?: string;
+    }) {
+        try {
+            return await StoreRepository.updateStoreInfo(data);
+        } catch (error) {
+            throw error;
+        }
+    }
 };

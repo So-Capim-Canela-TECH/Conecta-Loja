@@ -80,4 +80,57 @@ export class StoreRepository {
             data,
         });
     }
+
+    /**
+     * Repositório: busca as informações básicas da loja.
+     * @returns Promise com as informações da loja
+     */
+    static async getStoreInfo() {
+        return await prisma.store.findUnique({
+            where: { id: 1 },
+            select: {
+                id: true,
+                name: true,
+                contact: true,
+                email: true,
+                description: true,
+                street: true,
+                city: true,
+                state: true,
+                zipCode: true
+            }
+        });
+    }
+
+    /**
+     * Repositório: atualiza as informações básicas da loja.
+     * @param data - Objeto com os campos a serem atualizados
+     * @returns Promise com as informações atualizadas
+     */
+    static async updateStoreInfo(data: {
+        name?: string;
+        contact?: string;
+        email?: string;
+        description?: string;
+        street?: string;
+        city?: string;
+        state?: string;
+        zipCode?: string;
+    }) {
+        return await prisma.store.update({
+            where: { id: 1 },
+            data,
+            select: {
+                id: true,
+                name: true,
+                contact: true,
+                email: true,
+                description: true,
+                street: true,
+                city: true,
+                state: true,
+                zipCode: true
+            }
+        });
+    }
 };

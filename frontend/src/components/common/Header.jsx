@@ -13,6 +13,7 @@ import {
 import { authService } from "../../api/auth";
 import { userService } from "../../api/userService";
 import { useCart } from "../../hooks/useCart.jsx";
+import { useStore } from "../../contexts/StoreContext";
 
 /**
  * Header - Componente de cabeçalho principal da aplicação
@@ -39,6 +40,9 @@ const Header = () => {
   // Hook do carrinho
   const { totalItems, openCart, handleUserLogin, handleUserLogout } = useCart();
 
+  // Hook da loja
+  const { storeInfo, fetchStoreInfo } = useStore();
+
   // Verificar se há token válido quando o componente monta
   useEffect(() => {
     /**
@@ -61,14 +65,20 @@ const Header = () => {
           if (response.user) {
             console.log("👤 Usuário válido, buscando dados completos do perfil...");
 
-            // Buscar dados completos do perfil incluindo avatar
+            // Buscar dados completos do perfil incluindo avatar e dados atualizados
             try {
               const profileData = await userService.getProfile();
               console.log("📄 Dados do perfil carregados:", profileData);
               setUser({
                 ...response.user,
-                avatar: profileData.avatar
+                name: profileData.name, // Usar nome atualizado do perfil
+                email: profileData.email, // Usar email atualizado do perfil
+                avatar: profileData.avatar,
+                contact: profileData.contact // Incluir contato se disponível
               });
+
+              // Buscar informações da loja quando usuário está logado
+              await fetchStoreInfo();
             } catch (profileError) {
               console.log("⚠️ Erro ao buscar perfil, usando dados básicos:", profileError.message);
               // Mesmo com erro no perfil, mantém o usuário logado com dados básicos
@@ -123,11 +133,14 @@ const Header = () => {
    */
   const handleLogin = async (userData) => {
     try {
-      // Buscar dados completos do perfil incluindo avatar
+      // Buscar dados completos do perfil incluindo avatar e dados atualizados
       const profileData = await userService.getProfile();
       setUser({
         ...userData,
-        avatar: profileData.avatar
+        name: profileData.name, // Usar nome atualizado do perfil
+        email: profileData.email, // Usar email atualizado do perfil
+        avatar: profileData.avatar,
+        contact: profileData.contact // Incluir contato se disponível
       });
     } catch (error) {
       console.log("⚠️ Erro ao buscar perfil no login, usando dados básicos:", error.message);
@@ -176,7 +189,9 @@ const Header = () => {
         <div className="flex justify-between items-center py-4">
           {/* Logo/Brand Section */}
           <div className="flex items-center">
-            <h1 className="text-xl font-bold text-orange-500">Conecta Loja</h1>
+            <h1 className="text-xl font-bold text-orange-500">
+              {storeInfo?.name || 'Conecta Loja'}
+            </h1>
           </div>
 
           {/* Desktop Navigation Menu */}
@@ -185,11 +200,11 @@ const Header = () => {
             <div className="flex items-center space-x-6 text-sm text-gray-500">
               <div className="flex items-center space-x-1">
                 <FiPhone className="w-4 h-4" />
-                <span>(89) 99999-9999</span>
+                <span>{storeInfo?.contact || '(89) 99999-9999'}</span>
               </div>
               <div className="flex items-center space-x-1">
                 <FiMapPin className="w-4 h-4" />
-                <span>Picos, PI</span>
+                <span>{storeInfo?.city && storeInfo?.state ? `${storeInfo.city}, ${storeInfo.state}` : 'Picos, PI'}</span>
               </div>
             </div>
 

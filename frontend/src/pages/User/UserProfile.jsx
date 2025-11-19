@@ -203,9 +203,15 @@ const UserProfile = () => {
 
         setIsSavingPersonal(true);
         try {
-            await userService.updatePersonalInfo({
+            const result = await userService.updatePersonalInfo({
                 name: personalForm.name.trim()
             });
+
+            // Atualizar token no localStorage se fornecido
+            if (result.token) {
+                localStorage.setItem("authToken", result.token);
+            }
+
             setProfile(prev => ({ ...prev, name: personalForm.name.trim() }));
             setIsPersonalInfoModalOpen(false);
             toast({
@@ -256,7 +262,13 @@ const UserProfile = () => {
         if (Object.keys(updates).length > 0) {
             setIsSavingContact(true);
             try {
-                await userService.updatePersonalInfo(updates);
+                const result = await userService.updatePersonalInfo(updates);
+
+                // Atualizar token no localStorage se fornecido
+                if (result.token) {
+                    localStorage.setItem("authToken", result.token);
+                }
+
                 setProfile(prev => ({ ...prev, ...updates }));
                 setIsContactModalOpen(false);
                 toast({

@@ -93,7 +93,28 @@ export class OrderRepository {
             ? (status as OrderStatus)
             : OrderStatus.RECEBIDO;
 
-        return await prisma.pedido.create({
+        // Primeiro, verificar se há estoque suficiente para todos os produtos
+        for (const produto of produtos) {
+            const produtoEstoque = await prisma.product.findUnique({
+                where: { id: produto.produtoId },
+                select: { id: true, name: true, estoque: true, available: true }
+            });
+
+            if (!produtoEstoque) {
+                throw new Error(`Produto com ID ${produto.produtoId} não encontrado`);
+            }
+
+            if (!produtoEstoque.available) {
+                throw new Error(`Produto "${produtoEstoque.name}" não está disponível`);
+            }
+
+            if (produtoEstoque.estoque < produto.quantidade) {
+                throw new Error(`Estoque insuficiente para "${produtoEstoque.name}". Disponível: ${produtoEstoque.estoque}, solicitado: ${produto.quantidade}`);
+            }
+        }
+
+        // Criar o pedido
+        const pedido = await prisma.pedido.create({
             data: {
                 usuarioId,
                 enderecoId,
@@ -113,6 +134,20 @@ export class OrderRepository {
                 endereco: true
             }
         });
+
+        // Decrementar o estoque dos produtos
+        for (const produto of produtos) {
+            await prisma.product.update({
+                where: { id: produto.produtoId },
+                data: {
+                    estoque: {
+                        decrement: produto.quantidade
+                    }
+                }
+            });
+        }
+
+        return pedido;
     }
 
     /**

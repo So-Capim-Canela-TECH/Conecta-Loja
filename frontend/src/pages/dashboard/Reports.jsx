@@ -24,7 +24,6 @@ import SalesChart from "./components/SalesChart";
 import TopProductsTable from "./components/TopProductsTable";
 import CategoryChart from "./components/CategoryChart";
 import PeakHoursChart from "./components/PeakHoursChart";
-import OperationalMetrics from "./components/OperationalMetrics";
 import { reportService } from "../../api/report";
 
 // Helper para carregar scripts dinamicamente (versão UMD)
@@ -402,16 +401,6 @@ const Reports = () => {
                 </Card>
               </div>
 
-              {/* Operational Metrics */}
-              <section>
-                <div className="flex items-center space-x-2 mb-6">
-                  <Icon name="Activity" size={24} className="text-primary" />
-                  <h2 className="text-xl font-semibold text-foreground">
-                    Métricas Operacionais
-                  </h2>
-                </div>
-                <OperationalMetrics data={reportData.operational} />
-              </section>
             </>
           ) : (
             <div className="text-center py-20">
